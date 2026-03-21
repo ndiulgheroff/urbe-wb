@@ -353,3 +353,26 @@ body {
 }
 
 .print-footer { display: none; }
+
+/* PDF capture mode (applied temporarily during html2canvas screenshot) */
+body.pdf-capture { background: white; color: black; font-size: 11px; }
+body.pdf-capture .topbar { background: white; color: black; border-bottom: 2px solid black; }
+body.pdf-capture .topbar-actions .lang-btn { display: none; }
+body.pdf-capture .topbar-actions .dropdown { display: none; }
+body.pdf-capture .panel-left .aircraft-card:not(.selected) { display: none; }
+body.pdf-capture .aircraft-card { border-color: black; }
+body.pdf-capture .dashboard { display: block; }
+body.pdf-capture .panel-left,
+body.pdf-capture .panel-center,
+body.pdf-capture .panel-right { background: white; border: none; }
+body.pdf-capture .mass-input,
+body.pdf-capture .field-input { border: none; background: none; font-weight: bold; color: black; }
+body.pdf-capture .result-card { border-color: #333; background: none; }
+body.pdf-capture .canvas-container { background: transparent; border-color: #333; }
+body.pdf-capture .section-label { color: #333; }
+body.pdf-capture .calc-table th { color: #333; }
+body.pdf-capture .calc-table td { color: black; border-bottom-color: #ccc; }
+body.pdf-capture .subtotal-row.no-fuel { color: #e65100; }
+body.pdf-capture .subtotal-row.with-fuel { color: #2E7D32; }
+body.pdf-capture .fuel-section { border-color: #2E7D32; background: rgba(76,175,80,0.05); }
+body.pdf-capture .print-footer { display: block; }

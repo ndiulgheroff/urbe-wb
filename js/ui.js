@@ -318,10 +318,52 @@ function initUI() {
     window.print();
   });
 
-  // Download PDF button
-  document.getElementById('btnDownloadPdf').addEventListener('click', () => {
+  // Download PDF button — generates and downloads a real PDF file
+  document.getElementById('btnDownloadPdf').addEventListener('click', async () => {
     exportMenu.classList.remove('open');
-    window.print(); // browser print dialog allows "Save as PDF"
+    const btn = document.getElementById('btnDownloadPdf');
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    try {
+      // Temporarily apply print-like styles for capture
+      document.body.classList.add('pdf-capture');
+
+      const element = document.body;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      });
+
+      document.body.classList.remove('pdf-capture');
+
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      const ratio = Math.min(pdfW / imgW, pdfH / imgH);
+      const w = imgW * ratio;
+      const h = imgH * ratio;
+      const x = (pdfW - w) / 2;
+      const y = 0;
+
+      pdf.addImage(imgData, 'PNG', x, y, w, h);
+
+      // Generate filename with aircraft reg and date
+      const reg = selectedAircraft ? selectedAircraft.registration : 'DA40NG';
+      const date = document.getElementById('flightDate').value.replace(/\//g, '-');
+      pdf.save(`WB_${reg}_${date}.pdf`);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      alert('PDF generation failed. Try using Print instead.');
+    }
+
+    btn.textContent = t('downloadPdf');
+    btn.disabled = false;
   });
 
   initPdfExport(document.getElementById('cgCanvas'));

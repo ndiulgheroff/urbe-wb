@@ -376,6 +376,7 @@ body {
   .result-card.neutral .result-value { color: black !important; }
   .canvas-container { background: transparent !important; border-color: #333 !important; }
   .warning-banner { border-color: red !important; color: red !important; background: #fff0f0 !important; }
+  .disclaimer { background: none !important; border-color: #999 !important; color: #333 !important; margin: 8px 0 !important; }
   .flight-info { border-top-color: #ccc !important; }
 
   .print-footer {
@@ -387,6 +388,17 @@ body {
     border-top: 1px solid #ccc;
     padding-top: 8px;
   }
+}
+
+.disclaimer {
+  background: rgba(255,152,0,0.08);
+  border: 1px solid var(--orange);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 12px 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .print-footer { display: none; }

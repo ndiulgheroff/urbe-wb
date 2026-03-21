@@ -1,6 +1,6 @@
 import { FLEET, LOADING_STATIONS, FUEL_DENSITY, FUEL_ARM, MAX_FUEL_LITERS } from './fleet-data.js';
 import { calculate } from './calculator.js';
-import { renderEnvelope } from './cg-envelope.js';
+import { renderEnvelope, renderMomentRange } from './cg-envelope.js';
 import { t, getLang, setLang } from './i18n.js';
 import { setPrintOptions, initPdfExport } from './pdf-export.js';
 
@@ -170,23 +170,24 @@ function recalculate() {
   // Results panel
   renderResults(result);
 
-  // CG Diagram
-  renderEnvelope(document.getElementById('cgCanvas'), {
+  // CG Diagram (6.4.4)
+  const chartOpts = {
     maxTakeoffMass: selectedAircraft.maxTakeoffMass,
     cgNoFuel: result.cgNoFuel,
     massNoFuel: result.totalNoFuelMass,
     cgFull: result.cgFull,
     massFull: result.totalMass,
+    momentNoFuel: result.totalNoFuelMoment,
+    momentFull: result.totalMoment,
     cgFullInLimits: result.cgFullInLimits === 1,
-  });
+  };
+  renderEnvelope(document.getElementById('cgCanvas'), chartOpts);
+
+  // Moment Range Diagram (6.4.5)
+  renderMomentRange(document.getElementById('momentCanvas'), chartOpts);
 
   setPrintOptions({
-    maxTakeoffMass: selectedAircraft.maxTakeoffMass,
-    cgNoFuel: result.cgNoFuel,
-    massNoFuel: result.totalNoFuelMass,
-    cgFull: result.cgFull,
-    massFull: result.totalMass,
-    cgFullInLimits: result.cgFullInLimits === 1,
+    ...chartOpts,
   });
 }
 
@@ -332,7 +333,7 @@ function initUI() {
     setTimeout(() => window.print(), 100);
   });
 
-  initPdfExport(document.getElementById('cgCanvas'));
+  initPdfExport(document.getElementById('cgCanvas'), document.getElementById('momentCanvas'));
 
   // Initial render
   renderUI();

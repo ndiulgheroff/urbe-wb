@@ -406,12 +406,24 @@ function initUI() {
 </div>
 <div class="diagram"><img src="${cgImageData}"></div>
 <div class="footer">${t('generatedBy')}</div>
-<script>window.onload=()=>{window.print();}</script>
 </body></html>`;
 
-    const win = window.open('', '_blank');
-    win.document.write(html);
-    win.document.close();
+    // Use a hidden iframe to avoid popup blockers
+    let iframe = document.getElementById('pdfFrame');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'pdfFrame';
+      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1100px;height:800px;';
+      document.body.appendChild(iframe);
+    }
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    // Wait for image to load then print
+    iframe.onload = () => {
+      setTimeout(() => iframe.contentWindow.print(), 300);
+    };
   });
 
   initPdfExport(document.getElementById('cgCanvas'));

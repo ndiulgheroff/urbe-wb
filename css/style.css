@@ -338,7 +338,7 @@ body {
     border-color: #333;
     background: none;
   }
-  .canvas-container { background: white; border-color: #333; }
+  .canvas-container { background: transparent; border-color: #333; }
   .warning-banner { border-color: red; }
 
   .print-footer {

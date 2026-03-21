@@ -5,7 +5,7 @@ const MARGIN = { top: 44, right: 30, bottom: 58, left: 80 };
 const CG_MIN = 2.35, CG_MAX = 2.58;
 const MASS_MIN = 900, MASS_MAX = 1350;
 
-export function renderEnvelope(canvas, options) {
+export function renderEnvelope(canvas, options, printMode = false) {
   const dpr = window.devicePixelRatio || 1;
   const displayW = canvas.clientWidth;
   const displayH = canvas.clientHeight;
@@ -21,12 +21,27 @@ export function renderEnvelope(canvas, options) {
   function toCx(cg) { return MARGIN.left + (cg - CG_MIN) / (CG_MAX - CG_MIN) * w; }
   function toCy(mass) { return MARGIN.top + h - (mass - MASS_MIN) / (MASS_MAX - MASS_MIN) * h; }
 
+  // Colors based on mode
+  const colors = printMode ? {
+    bg: 'transparent', grid: '#ccc', axis: '#333', axisLabel: '#333',
+    title: '#000', envelopeFill: 'rgba(76, 175, 80, 0.1)', envelopeStroke: '#2E7D32',
+    labelBg: 'rgba(255, 255, 255, 0.85)',
+  } : {
+    bg: '#1a1a2e', grid: '#333', axis: '#aaa', axisLabel: '#ccc',
+    title: '#fff', envelopeFill: 'rgba(76, 175, 80, 0.15)', envelopeStroke: '#4CAF50',
+    labelBg: 'rgba(26, 26, 46, 0.85)',
+  };
+
   // Background
-  ctx.fillStyle = '#1a1a2e';
-  ctx.fillRect(0, 0, displayW, displayH);
+  if (printMode) {
+    ctx.clearRect(0, 0, displayW, displayH);
+  } else {
+    ctx.fillStyle = colors.bg;
+    ctx.fillRect(0, 0, displayW, displayH);
+  }
 
   // Grid
-  ctx.strokeStyle = '#333';
+  ctx.strokeStyle = colors.grid;
   ctx.lineWidth = 0.5;
   for (let cg = 2.35; cg <= 2.58; cg += 0.05) {
     ctx.beginPath(); ctx.moveTo(toCx(cg), MARGIN.top); ctx.lineTo(toCx(cg), MARGIN.top + h); ctx.stroke();
@@ -42,8 +57,8 @@ export function renderEnvelope(canvas, options) {
     const aftPoints = envelope.map(p => [p.cgAft, p.mass]).reverse();
     const polygon = [...fwdPoints, ...aftPoints];
 
-    ctx.fillStyle = 'rgba(76, 175, 80, 0.15)';
-    ctx.strokeStyle = '#4CAF50';
+    ctx.fillStyle = colors.envelopeFill;
+    ctx.strokeStyle = colors.envelopeStroke;
     ctx.lineWidth = 2;
     ctx.beginPath();
     polygon.forEach(([cg, mass], i) => {
@@ -56,7 +71,7 @@ export function renderEnvelope(canvas, options) {
   }
 
   // Axes
-  ctx.strokeStyle = '#aaa';
+  ctx.strokeStyle = colors.axis;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(MARGIN.left, MARGIN.top);
@@ -65,7 +80,7 @@ export function renderEnvelope(canvas, options) {
   ctx.stroke();
 
   // Axis labels
-  ctx.fillStyle = '#ccc';
+  ctx.fillStyle = colors.axisLabel;
   ctx.font = '14px sans-serif';
   ctx.textAlign = 'center';
   for (let cg = 2.35; cg <= 2.58; cg += 0.05) {
@@ -89,7 +104,7 @@ export function renderEnvelope(canvas, options) {
   ctx.restore();
 
   // Title
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = colors.title;
   ctx.font = 'bold 16px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(t('cgDiagram'), MARGIN.left + w / 2, 24);
@@ -108,7 +123,7 @@ export function renderEnvelope(canvas, options) {
     // Label with background for readability
     ctx.font = 'bold 13px sans-serif';
     const textW = ctx.measureText(label).width;
-    ctx.fillStyle = 'rgba(26, 26, 46, 0.85)';
+    ctx.fillStyle = colors.labelBg;
     ctx.fillRect(x + 10, y + labelYOffset - 12, textW + 6, 17);
     ctx.fillStyle = color;
     ctx.textAlign = 'left';

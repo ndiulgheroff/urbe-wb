@@ -19,7 +19,7 @@ export function initPdfExport(canvasEl) {
       // Force 2x render for print quality
       const origDpr = window.devicePixelRatio;
       Object.defineProperty(window, 'devicePixelRatio', { value: 2, writable: true, configurable: true });
-      renderEnvelope(canvasEl, currentOptions);
+      renderEnvelope(canvasEl, currentOptions, true);
       Object.defineProperty(window, 'devicePixelRatio', { value: origDpr, writable: true, configurable: true });
     }
   });

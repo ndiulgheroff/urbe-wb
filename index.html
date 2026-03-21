@@ -17,7 +17,13 @@
   <div class="topbar-actions">
     <button class="lang-btn active" data-lang="it">IT</button>
     <button class="lang-btn" data-lang="en">EN</button>
-    <button class="btn-pdf" id="btnPdf" data-i18n="exportPdf">Stampa PDF</button>
+    <div class="dropdown" id="exportDropdown">
+      <button class="btn-pdf" id="btnExport">📄 <span data-i18n="export">Esporta</span> ▾</button>
+      <div class="dropdown-menu" id="exportMenu">
+        <button class="dropdown-item" id="btnDownloadPdf" data-i18n="downloadPdf">Scarica PDF</button>
+        <button class="dropdown-item" id="btnPrint" data-i18n="print">Stampa</button>
+      </div>
+    </div>
   </div>
 </div>
 

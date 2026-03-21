@@ -284,7 +284,31 @@ function initUI() {
     });
   });
 
-  document.getElementById('btnPdf').addEventListener('click', () => window.print());
+  // Export dropdown
+  const btnExport = document.getElementById('btnExport');
+  const exportMenu = document.getElementById('exportMenu');
+
+  btnExport.addEventListener('click', (e) => {
+    e.stopPropagation();
+    exportMenu.classList.toggle('open');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    exportMenu.classList.remove('open');
+  });
+
+  // Print button
+  document.getElementById('btnPrint').addEventListener('click', () => {
+    exportMenu.classList.remove('open');
+    window.print();
+  });
+
+  // Download PDF button
+  document.getElementById('btnDownloadPdf').addEventListener('click', () => {
+    exportMenu.classList.remove('open');
+    window.print(); // browser print dialog allows "Save as PDF"
+  });
 
   initPdfExport(document.getElementById('cgCanvas'));
 

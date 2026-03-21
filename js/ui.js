@@ -315,15 +315,17 @@ function initUI() {
   });
 
   // Print button
-  document.getElementById('btnPrint').addEventListener('click', () => {
+  document.getElementById('btnPrint').addEventListener('click', (e) => {
+    e.stopPropagation();
     exportMenu.classList.remove('open');
-    window.print();
+    setTimeout(() => window.print(), 100);
   });
 
-  // Download PDF — same print dialog, user selects "Save as PDF" as destination
-  document.getElementById('btnDownloadPdf').addEventListener('click', () => {
+  // Save as PDF — same print dialog, user selects "Save as PDF" as destination
+  document.getElementById('btnDownloadPdf').addEventListener('click', (e) => {
+    e.stopPropagation();
     exportMenu.classList.remove('open');
-    window.print();
+    setTimeout(() => window.print(), 100);
   });
 
   initPdfExport(document.getElementById('cgCanvas'));

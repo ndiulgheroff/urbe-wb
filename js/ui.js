@@ -1,3 +1,282 @@
-import { FLEET } from './fleet-data.js';
-console.log('Fleet loaded:', FLEET.length, 'aircraft');
-console.log(FLEET.map(a => a.registration).join(', '));
+import { FLEET, LOADING_STATIONS, FUEL_DENSITY, FUEL_ARM, MAX_FUEL_LITERS } from './fleet-data.js';
+import { calculate } from './calculator.js';
+import { renderEnvelope } from './cg-envelope.js';
+import { t, getLang, setLang } from './i18n.js';
+
+let selectedAircraft = null;
+
+// --- Aircraft List ---
+function renderAircraftList() {
+  const container = document.getElementById('aircraftList');
+  container.innerHTML = '';
+  for (const ac of FLEET) {
+    const card = document.createElement('div');
+    card.className = 'aircraft-card' + (selectedAircraft === ac ? ' selected' : '');
+    card.innerHTML = `
+      <div class="reg">${ac.registration}</div>
+      <div class="detail">${ac.emptyWeight} kg · MTOM ${ac.maxTakeoffMass}</div>
+    `;
+    card.addEventListener('click', () => {
+      selectedAircraft = ac;
+      renderAircraftList();
+      recalculate();
+    });
+    container.appendChild(card);
+  }
+}
+
+// --- Calculation Table ---
+function renderCalcTable() {
+  const tbody = document.getElementById('calcBody');
+  tbody.innerHTML = '';
+
+  // Row 1: Empty mass (auto-filled)
+  const row1 = document.createElement('tr');
+  row1.className = 'auto-filled';
+  row1.innerHTML = `
+    <td>1</td>
+    <td data-i18n="emptyMass">${t('emptyMass')}</td>
+    <td>${selectedAircraft ? selectedAircraft.emptyArm.toFixed(3) : '—'}</td>
+    <td style="text-align:right">${selectedAircraft ? selectedAircraft.emptyWeight.toFixed(2) : '—'}</td>
+    <td style="text-align:right">${selectedAircraft ? selectedAircraft.emptyMoment.toFixed(2) : '—'}</td>
+  `;
+  tbody.appendChild(row1);
+
+  // Rows 2-8: Loading stations
+  LOADING_STATIONS.forEach((station, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 2}</td>
+      <td data-i18n="${station.id}">${t(station.id)}</td>
+      <td>${station.arm.toFixed(2)}</td>
+      <td style="text-align:right">
+        <input class="mass-input station-input" type="number" min="0" max="${station.maxKg}"
+               step="0.1" value="0" data-station="${station.id}" data-max="${station.maxKg}">
+      </td>
+      <td style="text-align:right" class="moment-cell" data-station-moment="${station.id}">0.00</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Row 9: Total without fuel
+  const row9 = document.createElement('tr');
+  row9.className = 'subtotal-row no-fuel';
+  row9.innerHTML = `
+    <td>9</td>
+    <td data-i18n="totalNoFuel">${t('totalNoFuel')}</td>
+    <td>—</td>
+    <td style="text-align:right" id="totalNoFuelMass">0.00</td>
+    <td style="text-align:right" id="totalNoFuelMoment">0.00</td>
+  `;
+  tbody.appendChild(row9);
+
+  // Bind input events: 'input' for live recalc, 'change' for sanitization
+  tbody.querySelectorAll('.station-input').forEach(input => {
+    input.addEventListener('input', () => recalculate());
+    input.addEventListener('change', () => { sanitizeInput(input); recalculate(); });
+  });
+}
+
+// --- Input Sanitization ---
+// Called on 'change'/'blur' only, NOT on every keystroke,
+// so the user can type decimal values like "12.5" without interference.
+function sanitizeInput(input) {
+  let val = parseFloat(input.value);
+  if (isNaN(val) || val < 0) {
+    input.value = 0;
+    return;
+  }
+  // Round to 1 decimal
+  val = Math.round(val * 10) / 10;
+  input.value = val;
+}
+
+// --- Gather Station Masses ---
+function getStationMasses() {
+  const masses = {};
+  document.querySelectorAll('.station-input').forEach(input => {
+    masses[input.dataset.station] = parseFloat(input.value) || 0;
+  });
+  return masses;
+}
+
+// --- Recalculate ---
+function recalculate() {
+  if (!selectedAircraft) return;
+
+  const stationMasses = getStationMasses();
+  const fuelLiters = parseFloat(document.getElementById('fuelInput').value) || 0;
+
+  const result = calculate({ aircraft: selectedAircraft, stationMasses, fuelLiters });
+
+  // Update station moments
+  for (const station of LOADING_STATIONS) {
+    const cell = document.querySelector(`[data-station-moment="${station.id}"]`);
+    if (cell) cell.textContent = result.stationMoments[station.id].toFixed(2);
+  }
+
+  // Station warnings
+  for (const station of LOADING_STATIONS) {
+    const input = document.querySelector(`[data-station="${station.id}"]`);
+    if (input) {
+      input.classList.toggle('warning', result.stationWarnings[station.id] === 1);
+    }
+  }
+
+  // Fuel display
+  document.getElementById('fuelMassDisplay').textContent = result.fuelMass.toFixed(2);
+  document.getElementById('fuelMomentDisplay').textContent = result.fuelMoment.toFixed(2);
+
+  // Fuel input warning
+  const fuelInput = document.getElementById('fuelInput');
+  fuelInput.classList.toggle('warning', result.fuelOverLimit === 1);
+
+  // Totals
+  document.getElementById('totalNoFuelMass').textContent = result.totalNoFuelMass.toFixed(2);
+  document.getElementById('totalNoFuelMoment').textContent = result.totalNoFuelMoment.toFixed(2);
+
+  // Totals section (row 11)
+  const totalsSection = document.getElementById('totalsSection');
+  totalsSection.innerHTML = `
+    <table class="calc-table">
+      <tr class="subtotal-row with-fuel">
+        <td>11</td>
+        <td data-i18n="totalWithFuel">${t('totalWithFuel')}</td>
+        <td>—</td>
+        <td style="text-align:right">${result.totalMass.toFixed(2)}</td>
+        <td style="text-align:right">${result.totalMoment.toFixed(2)}</td>
+      </tr>
+    </table>
+  `;
+
+  // Results panel
+  renderResults(result);
+
+  // CG Diagram
+  renderEnvelope(document.getElementById('cgCanvas'), {
+    maxTakeoffMass: selectedAircraft.maxTakeoffMass,
+    cgNoFuel: result.cgNoFuel,
+    massNoFuel: result.totalNoFuelMass,
+    cgFull: result.cgFull,
+    massFull: result.totalMass,
+    cgFullInLimits: result.cgFullInLimits === 1,
+  });
+}
+
+// --- Results Panel ---
+function renderResults(result) {
+  const grid = document.getElementById('resultGrid');
+  const warnings = [];
+
+  // No pilot warning
+  if (result.noPilotWarning) warnings.push(t('enterPilotWeight'));
+  // Overweight
+  if (!result.massInLimits) warnings.push(`${t('overweight')}: ${result.totalMass.toFixed(1)} kg > ${result.maxTakeoffMass} kg`);
+  // CG out of limits
+  if (!result.cgFullInLimits && !result.noPilotWarning) warnings.push(t('outOfLimits'));
+  // Fuel over
+  if (result.fuelOverLimit) warnings.push(t('fuelOverLimit'));
+  // Station warnings
+  for (const station of LOADING_STATIONS) {
+    if (result.stationWarnings[station.id]) {
+      warnings.push(`${t(station.id)}: ${t('overStationLimit')}`);
+    }
+  }
+
+  // Warning banner
+  const banner = document.getElementById('warningBanner');
+  if (warnings.length > 0) {
+    banner.innerHTML = warnings.join('<br>');
+    banner.classList.add('visible');
+  } else {
+    banner.classList.remove('visible');
+  }
+
+  // CG cards
+  const cgNoFuelClass = 'ref';
+  const cgFullClass = result.noPilotWarning ? 'neutral' :
+                       (result.cgFullInLimits ? 'ok' : 'fail');
+  const massClass = result.massInLimits ? 'ok' : 'fail';
+  const margin = result.maxTakeoffMass - result.totalMass;
+
+  grid.innerHTML = `
+    <div class="result-card ${cgNoFuelClass}">
+      <div class="result-label">${t('cgNoFuel')}</div>
+      <div class="result-value">${result.noPilotWarning ? '—' : result.cgNoFuel.toFixed(3) + ' m'}</div>
+      <div class="result-status">${t('reference')}</div>
+    </div>
+    <div class="result-card ${cgFullClass}">
+      <div class="result-label">${t('cgWithFuel')}</div>
+      <div class="result-value">${result.noPilotWarning ? '—' : result.cgFull.toFixed(3) + ' m'}</div>
+      <div class="result-status">${result.noPilotWarning ? '—' : (result.cgFullInLimits ? t('withinLimits') : t('outOfLimits'))}</div>
+    </div>
+    <div class="result-card ${massClass}">
+      <div class="result-label">${t('takeoffMass')}</div>
+      <div class="result-value">${result.totalMass.toFixed(1)} kg</div>
+      <div class="result-status">${result.massInLimits ? '✓ < ' + result.maxTakeoffMass + ' kg' : t('overweight')}</div>
+    </div>
+    <div class="result-card neutral">
+      <div class="result-label">${t('margin')}</div>
+      <div class="result-value" style="color: ${margin >= 0 ? 'var(--green)' : 'var(--red)'}">${margin.toFixed(1)} kg</div>
+      <div class="result-status">${t('available')}</div>
+    </div>
+  `;
+}
+
+// --- i18n: update all data-i18n elements ---
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+}
+
+// --- Re-render (called on language switch) ---
+function renderUI() {
+  renderAircraftList();
+  renderCalcTable();
+  applyTranslations();
+
+  // Update language button active states
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === getLang());
+  });
+
+  if (selectedAircraft) {
+    recalculate();
+  } else {
+    document.getElementById('resultGrid').innerHTML = `
+      <div class="result-card neutral" style="grid-column: 1 / -1; padding: 20px;">
+        <div class="result-label">${t('selectAircraft')}</div>
+      </div>
+    `;
+  }
+}
+
+// --- Init (runs once) ---
+function initUI() {
+  // Set today's date
+  const dateInput = document.getElementById('flightDate');
+  if (!dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  // Bind events ONCE
+  const fuelInput = document.getElementById('fuelInput');
+  fuelInput.addEventListener('input', () => recalculate());
+  fuelInput.addEventListener('change', () => { sanitizeInput(fuelInput); recalculate(); });
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setLang(btn.dataset.lang);
+      renderUI();
+    });
+  });
+
+  document.getElementById('btnPdf').addEventListener('click', () => window.print());
+
+  // Initial render
+  renderUI();
+}
+
+initUI();

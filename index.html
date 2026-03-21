@@ -7,7 +7,106 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="app"></div>
-  <script type="module" src="js/ui.js"></script>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div>
+    <span class="topbar-title" data-i18n="appTitle">DA40NG Mass & Balance</span>
+    <span class="topbar-subtitle" data-i18n="appSubtitle">Urbe Flight School</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="lang-btn active" data-lang="it">IT</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="btn-pdf" id="btnPdf" data-i18n="exportPdf">Stampa PDF</button>
+  </div>
+</div>
+
+<!-- Dashboard 3-column layout -->
+<div class="dashboard">
+
+  <!-- LEFT: Aircraft selection + flight info -->
+  <div class="panel-left">
+    <div class="section-label" data-i18n="selectAircraft">Seleziona Aereo</div>
+    <div id="aircraftList"></div>
+
+    <div class="flight-info">
+      <div class="section-label" data-i18n="flightInfo">Info Volo</div>
+      <div class="field-group">
+        <div class="field-label" data-i18n="instructor">Istruttore</div>
+        <input class="field-input" type="text" id="instructorName" placeholder="Nome...">
+      </div>
+      <div class="field-group">
+        <div class="field-label" data-i18n="student">Studente</div>
+        <input class="field-input" type="text" id="studentName" placeholder="Nome...">
+      </div>
+      <div class="field-group">
+        <div class="field-label" data-i18n="date">Data</div>
+        <input class="field-input" type="date" id="flightDate">
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: Weight calculation table -->
+  <div class="panel-center">
+    <div class="section-label" data-i18n="massCalc">Calcolo Masse</div>
+    <table class="calc-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th data-i18n="station">Voce</th>
+          <th data-i18n="arm">Braccio (m)</th>
+          <th data-i18n="massKg">Massa (kg)</th>
+          <th data-i18n="momentKgm">Momento (kgm)</th>
+        </tr>
+      </thead>
+      <tbody id="calcBody"></tbody>
+    </table>
+
+    <!-- Fuel section -->
+    <div class="fuel-section">
+      <div class="fuel-header">
+        <span>⛽ <span data-i18n="fuel">Carburante</span> (0.84 kg/L)</span>
+        <span style="font-size:11px;color:var(--text-secondary);">Arm: 2.63 m</span>
+      </div>
+      <div class="fuel-input-row">
+        <div>
+          <div class="fuel-label" data-i18n="fuelLiters">Litri</div>
+          <input class="mass-input" type="number" id="fuelInput" min="0" max="148" step="1" value="0">
+        </div>
+        <div style="color:var(--text-muted);">→</div>
+        <div>
+          <div class="fuel-label" data-i18n="massKg">Massa (kg)</div>
+          <span id="fuelMassDisplay">0.00</span>
+        </div>
+        <div style="color:var(--text-muted);">→</div>
+        <div>
+          <div class="fuel-label" data-i18n="momentKgm">Momento (kgm)</div>
+          <span id="fuelMomentDisplay">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div id="totalsSection" style="margin-top: 10px;"></div>
+  </div>
+
+  <!-- RIGHT: CG verification + diagram -->
+  <div class="panel-right">
+    <div class="section-label" data-i18n="cgVerification">Verifica CG</div>
+
+    <div class="warning-banner" id="warningBanner"></div>
+
+    <div class="result-grid" id="resultGrid"></div>
+
+    <div class="canvas-container">
+      <canvas id="cgCanvas"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<div class="print-footer" data-i18n="generatedBy">Generato da Urbe W&B Dashboard</div>
+
+<script type="module" src="js/ui.js"></script>
 </body>
 </html>

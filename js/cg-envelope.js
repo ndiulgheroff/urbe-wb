@@ -94,8 +94,8 @@ export function renderEnvelope(canvas, options) {
   ctx.textAlign = 'center';
   ctx.fillText(t('cgDiagram'), MARGIN.left + w / 2, 24);
 
-  // Plot CG points
-  function plotPoint(cg, mass, color, label) {
+  // Plot CG points with label offset to avoid overlap
+  function plotPoint(cg, mass, color, label, labelYOffset) {
     if (cg == null || mass == null || mass <= 0) return;
     const x = toCx(cg), y = toCy(mass);
     ctx.beginPath();
@@ -105,16 +105,20 @@ export function renderEnvelope(canvas, options) {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.fillStyle = color;
+    // Label with background for readability
     ctx.font = 'bold 13px sans-serif';
+    const textW = ctx.measureText(label).width;
+    ctx.fillStyle = 'rgba(26, 26, 46, 0.85)';
+    ctx.fillRect(x + 10, y + labelYOffset - 12, textW + 6, 17);
+    ctx.fillStyle = color;
     ctx.textAlign = 'left';
-    ctx.fillText(label, x + 10, y + 5);
+    ctx.fillText(label, x + 13, y + labelYOffset);
   }
 
-  // CG without fuel (reference, always orange)
-  plotPoint(options.cgNoFuel, options.massNoFuel, '#FF9800', t('cgNoFuel'));
+  // CG without fuel (reference, always orange) — label ABOVE the point
+  plotPoint(options.cgNoFuel, options.massNoFuel, '#FF9800', t('cgNoFuel'), -14);
 
-  // CG with fuel (green if in limits, red if not)
+  // CG with fuel (green if in limits, red if not) — label BELOW the point
   const fullColor = options.cgFullInLimits ? '#4CAF50' : '#f44336';
-  plotPoint(options.cgFull, options.massFull, fullColor, t('cgWithFuel'));
+  plotPoint(options.cgFull, options.massFull, fullColor, t('cgWithFuel'), 18);
 }

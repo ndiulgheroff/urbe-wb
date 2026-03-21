@@ -29,6 +29,10 @@ function renderAircraftList() {
 
 // --- Calculation Table ---
 function renderCalcTable() {
+  // Save current input values before rebuilding
+  const savedMasses = getStationMasses();
+  const savedFuel = parseFloat(document.getElementById('fuelInput')?.value) || 0;
+
   const tbody = document.getElementById('calcBody');
   tbody.innerHTML = '';
 
@@ -72,11 +76,17 @@ function renderCalcTable() {
   `;
   tbody.appendChild(row9);
 
-  // Bind input events: 'input' for live recalc, 'change' for sanitization
+  // Restore saved values
   tbody.querySelectorAll('.station-input').forEach(input => {
+    const saved = savedMasses[input.dataset.station];
+    if (saved) input.value = saved;
     input.addEventListener('input', () => recalculate());
     input.addEventListener('change', () => { sanitizeInput(input); recalculate(); });
   });
+
+  // Restore fuel
+  const fuelInput = document.getElementById('fuelInput');
+  if (savedFuel) fuelInput.value = savedFuel;
 }
 
 // --- Input Sanitization ---

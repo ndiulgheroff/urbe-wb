@@ -11,7 +11,11 @@
 
 export const FUEL_DENSITY = 0.84; // kg per liter (Jet-A1)
 export const FUEL_ARM = 2.63; // meters aft of DP
-export const MAX_FUEL_LITERS = 148;
+export const TANK_CONFIGS = {
+  longRange: { id: 'longRange', maxFuelLiters: 148, labelIt: 'Long Range Tank', labelEn: 'Long Range Tank' },
+  standard:  { id: 'standard',  maxFuelLiters: 106, labelIt: 'Standard Tank',   labelEn: 'Standard Tank' },
+};
+export const MAX_FUEL_LITERS = 148; // default, overridden by selected tank config
 
 export const LOADING_STATIONS = [
   { id: 'frontSeats',    arm: 2.30, maxKg: 200, labelIt: 'Sedili anteriori',               labelEn: 'Front seats' },

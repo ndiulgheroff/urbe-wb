@@ -49,6 +49,13 @@
         <div class="field-label" data-i18n="date">Data</div>
         <input class="field-input" type="text" id="flightDate" placeholder="gg/mm/aaaa" maxlength="10">
       </div>
+      <div class="field-group">
+        <div class="field-label" data-i18n="tankConfig">Configurazione Serbatoi</div>
+        <select class="field-input" id="tankConfigSelect">
+          <option value="longRange" selected>Long Range Tank (148 L)</option>
+          <option value="standard">Standard Tank (106 L)</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -71,7 +78,7 @@
     <!-- Fuel section -->
     <div class="fuel-section">
       <div class="fuel-header">
-        <span>⛽ <span data-i18n="fuel">Carburante</span> (0.84 kg/L)</span>
+        <span>⛽ <span data-i18n="fuel">Carburante</span> (0.84 kg/L) — Max: <span id="maxFuelDisplay">148</span> L</span>
         <span style="font-size:11px;color:var(--text-secondary);">Arm: 2.63 m</span>
       </div>
       <div class="fuel-input-row">

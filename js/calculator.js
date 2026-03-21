@@ -25,7 +25,8 @@ function isInEnvelope(mass, cg, maxTakeoffMass) {
   return cg >= cgFwd && cg <= cgAft;
 }
 
-export function calculate({ aircraft, stationMasses, fuelLiters }) {
+export function calculate({ aircraft, stationMasses, fuelLiters, maxFuelLiters }) {
+  const maxFuel = maxFuelLiters || MAX_FUEL_LITERS;
   const emptyMass = aircraft.emptyWeight;
   const emptyMoment = aircraft.emptyMoment;
 
@@ -48,7 +49,7 @@ export function calculate({ aircraft, stationMasses, fuelLiters }) {
   }
 
   const noPilotWarning = (stationMasses.frontSeats || 0) === 0 ? 1 : 0;
-  const fuelOverLimit = fuelLiters > MAX_FUEL_LITERS ? 1 : 0;
+  const fuelOverLimit = fuelLiters > maxFuel ? 1 : 0;
 
   const totalNoFuelMass = emptyMass + stationsMassSum;
   const totalNoFuelMoment = emptyMoment + stationsMomentSum;

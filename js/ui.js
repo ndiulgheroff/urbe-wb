@@ -1,4 +1,4 @@
-import { FLEET, LOADING_STATIONS, FUEL_DENSITY, FUEL_ARM, MAX_FUEL_LITERS } from './fleet-data.js';
+import { FLEET, LOADING_STATIONS, FUEL_DENSITY, FUEL_ARM, MAX_FUEL_LITERS, TANK_CONFIGS } from './fleet-data.js';
 import { calculate } from './calculator.js';
 import { renderEnvelope, renderMomentRange } from './cg-envelope.js';
 import { t, getLang, setLang } from './i18n.js';
@@ -6,6 +6,11 @@ import { setPrintOptions, initPdfExport } from './pdf-export.js';
 
 let selectedAircraft = null;
 let lastResult = null;
+let selectedTankConfig = TANK_CONFIGS.longRange;
+
+function getMaxFuel() {
+  return selectedTankConfig.maxFuelLiters;
+}
 
 // --- Aircraft List ---
 function renderAircraftList() {
@@ -120,7 +125,7 @@ function recalculate() {
   const stationMasses = getStationMasses();
   const fuelLiters = parseFloat(document.getElementById('fuelInput').value) || 0;
 
-  const result = calculate({ aircraft: selectedAircraft, stationMasses, fuelLiters });
+  const result = calculate({ aircraft: selectedAircraft, stationMasses, fuelLiters, maxFuelLiters: getMaxFuel() });
   lastResult = result;
 
   // Update page title for PDF filename
@@ -144,6 +149,7 @@ function recalculate() {
   // Fuel display
   document.getElementById('fuelMassDisplay').textContent = result.fuelMass.toFixed(2);
   document.getElementById('fuelMomentDisplay').textContent = result.fuelMoment.toFixed(2);
+  document.getElementById('maxFuelDisplay').textContent = getMaxFuel();
 
   // Fuel input warning
   const fuelInput = document.getElementById('fuelInput');
@@ -297,6 +303,13 @@ function initUI() {
   const fuelInput = document.getElementById('fuelInput');
   fuelInput.addEventListener('input', () => recalculate());
   fuelInput.addEventListener('change', () => { sanitizeInput(fuelInput); recalculate(); });
+
+  // Tank config selector
+  document.getElementById('tankConfigSelect').addEventListener('change', (e) => {
+    selectedTankConfig = TANK_CONFIGS[e.target.value];
+    fuelInput.max = getMaxFuel();
+    recalculate();
+  });
 
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aircraft View Debug</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #12121f; color: #ccc; font-family: sans-serif; font-size: 13px; padding: 20px; }
+
+  .preview {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 3 / 1;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .aircraft-img {
+    position: absolute;
+    transform-origin: center center;
+    pointer-events: none;
+  }
+
+  .zone {
+    position: absolute;
+    border: 2px solid #4CAF50;
+    border-radius: 4px;
+    background: rgba(76,175,80,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4CAF50;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: move;
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 800px;
+  }
+
+  .control-group {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .control-group h3 { margin-bottom: 8px; color: #4CAF50; font-size: 13px; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .slider-row label { width: 80px; font-size: 11px; }
+  .slider-row input[type=range] { flex: 1; }
+  .slider-row .val { width: 50px; text-align: right; font-size: 11px; color: #4CAF50; }
+
+  #output {
+    background: #0a0a15;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 16px;
+    max-width: 800px;
+    font-family: monospace;
+    font-size: 11px;
+    white-space: pre;
+    color: #4CAF50;
+  }
+  button { background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h2 style="margin-bottom:12px">Aircraft View Debug Tool</h2>
+
+<div class="preview" id="preview">
+  <img src="img/aircraft.svg" class="aircraft-img" id="acImg"/>
+  <div class="zone" id="z-frontSeats">Front Seats</div>
+  <div class="zone" id="z-rearSeats">Rear Seats</div>
+  <div class="zone" id="z-stdBaggage" style="border-color:#FF9800;color:#FF9800;background:rgba(255,152,0,0.2)">Baggage</div>
+  <div class="zone" id="z-baggageTube" style="border-color:#2196F3;color:#2196F3;background:rgba(33,150,243,0.2)">Bag Tube</div>
+  <div class="zone" id="z-fuel" style="border-color:#FFC107;color:#FFC107;background:rgba(255,193,7,0.2)">Fuel</div>
+</div>
+
+<div class="controls">
+  <!-- Aircraft image controls -->
+  <div class="control-group">
+    <h3>Aircraft SVG</h3>
+    <div class="slider-row"><label>Rotate</label><input type="range" id="acRotate" min="-180" max="180" value="-90"><span class="val" id="acRotateVal">-90</span></div>
+    <div class="slider-row"><label>Scale %</label><input type="range" id="acScale" min="10" max="200" value="80"><span class="val" id="acScaleVal">80</span></div>
+    <div class="slider-row"><label>X %</label><input type="range" id="acX" min="0" max="100" value="50"><span class="val" id="acXVal">50</span></div>
+    <div class="slider-row"><label>Y %</label><input type="range" id="acY" min="0" max="100" value="50"><span class="val" id="acYVal">50</span></div>
+    <div class="slider-row"><label>Opacity</label><input type="range" id="acOpacity" min="5" max="100" value="25"><span class="val" id="acOpacityVal">25</span></div>
+  </div>
+
+  <!-- Zone controls -->
+  <div class="control-group">
+    <h3>Zones (select & adjust)</h3>
+    <div class="slider-row"><label>Zone</label>
+      <select id="zoneSelect" style="flex:1;background:#2a2a4a;color:#ccc;border:1px solid #444;padding:4px;border-radius:4px">
+        <option value="frontSeats">Front Seats</option>
+        <option value="rearSeats">Rear Seats</option>
+        <option value="stdBaggage">Std Baggage</option>
+        <option value="baggageTube">Baggage Tube</option>
+        <option value="fuel">Fuel</option>
+      </select>
+    </div>
+    <div class="slider-row"><label>X %</label><input type="range" id="zX" min="0" max="100" value="30"><span class="val" id="zXVal">30</span></div>
+    <div class="slider-row"><label>Y %</label><input type="range" id="zY" min="0" max="100" value="30"><span class="val" id="zYVal">30</span></div>
+    <div class="slider-row"><label>W %</label><input type="range" id="zW" min="2" max="30" value="10"><span class="val" id="zWVal">10</span></div>
+    <div class="slider-row"><label>H %</label><input type="range" id="zH" min="2" max="40" value="20"><span class="val" id="zHVal">20</span></div>
+  </div>
+</div>
+
+<button onclick="exportValues()">Export Values (copy from below)</button>
+<pre id="output"></pre>
+
+<script>
+const preview = document.getElementById('preview');
+const acImg = document.getElementById('acImg');
+
+// Zone state (percentages of container)
+const zones = {
+  frontSeats: { x: 33, y: 30, w: 10, h: 22 },
+  rearSeats:  { x: 46, y: 33, w: 8, h: 18 },
+  stdBaggage: { x: 56, y: 36, w: 7, h: 14 },
+  baggageTube:{ x: 66, y: 38, w: 7, h: 10 },
+  fuel:       { x: 23, y: 8, w: 16, h: 12 },
+};
+
+// Aircraft state
+const ac = { rotate: -90, scale: 80, x: 50, y: 50, opacity: 25 };
+
+function updateAircraft() {
+  const s = ac.scale / 100;
+  acImg.style.left = ac.x + '%';
+  acImg.style.top = ac.y + '%';
+  acImg.style.height = (ac.scale * 1.5) + '%';
+  acImg.style.width = 'auto';
+  acImg.style.transform = `translate(-50%, -50%) rotate(${ac.rotate}deg)`;
+  acImg.style.opacity = ac.opacity / 100;
+}
+
+function updateZone(id) {
+  const z = zones[id];
+  const el = document.getElementById('z-' + id);
+  el.style.left = z.x + '%';
+  el.style.top = z.y + '%';
+  el.style.width = z.w + '%';
+  el.style.height = z.h + '%';
+}
+
+function updateAll() {
+  updateAircraft();
+  Object.keys(zones).forEach(updateZone);
+}
+
+// Aircraft sliders
+['Rotate','Scale','X','Y','Opacity'].forEach(prop => {
+  const key = prop.toLowerCase();
+  const slider = document.getElementById('ac' + prop);
+  slider.value = ac[key];
+  document.getElementById('ac' + prop + 'Val').textContent = ac[key];
+  slider.addEventListener('input', () => {
+    ac[key] = parseInt(slider.value);
+    document.getElementById('ac' + prop + 'Val').textContent = ac[key];
+    updateAircraft();
+  });
+});
+
+// Zone sliders
+const zoneSelect = document.getElementById('zoneSelect');
+function loadZoneSliders() {
+  const id = zoneSelect.value;
+  const z = zones[id];
+  document.getElementById('zX').value = z.x; document.getElementById('zXVal').textContent = z.x;
+  document.getElementById('zY').value = z.y; document.getElementById('zYVal').textContent = z.y;
+  document.getElementById('zW').value = z.w; document.getElementById('zWVal').textContent = z.w;
+  document.getElementById('zH').value = z.h; document.getElementById('zHVal').textContent = z.h;
+}
+zoneSelect.addEventListener('change', loadZoneSliders);
+
+['X','Y','W','H'].forEach(prop => {
+  const key = prop.toLowerCase();
+  const slider = document.getElementById('z' + prop);
+  slider.addEventListener('input', () => {
+    const id = zoneSelect.value;
+    zones[id][key] = parseInt(slider.value);
+    document.getElementById('z' + prop + 'Val').textContent = zones[id][key];
+    updateZone(id);
+  });
+});
+
+function exportValues() {
+  const vb = '600 200'; // viewBox
+  const out = `// Aircraft CSS values:
+// rotate: ${ac.rotate}deg, scale-height: ${ac.scale * 1.5}%, left: ${ac.x}%, top: ${ac.y}%, opacity: ${ac.opacity/100}
+
+// Zone positions (as % of container → convert to viewBox 0 0 ${vb}):
+const ZONES = [
+  { id: 'frontSeats', x: ${Math.round(zones.frontSeats.x/100*600)}, y: ${Math.round(zones.frontSeats.y/100*200)}, w: ${Math.round(zones.frontSeats.w/100*600)}, h: ${Math.round(zones.frontSeats.h/100*200)} },
+  { id: 'rearSeats',  x: ${Math.round(zones.rearSeats.x/100*600)}, y: ${Math.round(zones.rearSeats.y/100*200)}, w: ${Math.round(zones.rearSeats.w/100*600)}, h: ${Math.round(zones.rearSeats.h/100*200)} },
+  { id: 'stdBaggage', x: ${Math.round(zones.stdBaggage.x/100*600)}, y: ${Math.round(zones.stdBaggage.y/100*200)}, w: ${Math.round(zones.stdBaggage.w/100*600)}, h: ${Math.round(zones.stdBaggage.h/100*200)} },
+  { id: 'baggageTube',x: ${Math.round(zones.baggageTube.x/100*600)}, y: ${Math.round(zones.baggageTube.y/100*200)}, w: ${Math.round(zones.baggageTube.w/100*600)}, h: ${Math.round(zones.baggageTube.h/100*200)} },
+  { id: 'fuel',       x: ${Math.round(zones.fuel.x/100*600)}, y: ${Math.round(zones.fuel.y/100*200)}, w: ${Math.round(zones.fuel.w/100*600)}, h: ${Math.round(zones.fuel.h/100*200)} },
+];
+
+// CSS for .aircraft-bg:
+.aircraft-bg {
+  position: absolute;
+  left: ${ac.x}%;
+  top: ${ac.y}%;
+  height: ${ac.scale * 1.5}%;
+  width: auto;
+  transform: translate(-50%, -50%) rotate(${ac.rotate}deg);
+  opacity: ${ac.opacity/100};
+  pointer-events: none;
+}`;
+  document.getElementById('output').textContent = out;
+}
+
+loadZoneSliders();
+updateAll();
+</script>
+</body>
+</html>

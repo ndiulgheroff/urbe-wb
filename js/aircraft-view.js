@@ -78,8 +78,8 @@ export function renderAircraftView(container, stationMasses, fuelLiters, maxFuel
           fill="${getTextColor(z.ratio)}" font-size="9" font-weight="bold" pointer-events="none">
       ${massText}
     </text>
-    <text x="${z.x + z.w/2}" y="${z.y + z.h + 10}" text-anchor="middle"
-          fill="rgba(255,255,255,0.2)" font-size="6" pointer-events="none">
+    <text x="${z.x + z.w/2}" y="${z.y + z.h + 11}" text-anchor="middle"
+          fill="rgba(255,255,255,0.5)" font-size="7" pointer-events="none">
       ${maxText}
     </text>`;
   }).join('')}

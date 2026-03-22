@@ -10,11 +10,11 @@ import { t } from './i18n.js';
 // The SVG is 674x859 originally (nose up), rotated 90° becomes ~859x674 (nose left)
 // Container aspect ratio ~3:1, zones positioned relative to viewBox "0 0 600 200"
 const ZONES = [
-  { id: 'frontSeats', x: 200, y: 68, w: 60, h: 44, label: () => t('frontSeats') },
-  { id: 'rearSeats',  x: 275, y: 72, w: 50, h: 36, label: () => t('rearSeats') },
-  { id: 'stdBaggage', x: 338, y: 76, w: 44, h: 28, label: () => t('stdBaggage') },
-  { id: 'baggageTube', x: 394, y: 80, w: 40, h: 20, label: () => t('baggageTube') },
-  { id: 'fuel',       x: 140, y: 20, w: 95, h: 22, label: () => t('fuel') },
+  { id: 'frontSeats', x: 210, y: 74, w: 60, h: 44, label: () => t('frontSeats') },
+  { id: 'rearSeats',  x: 276, y: 80, w: 48, h: 36, label: () => t('rearSeats') },
+  { id: 'stdBaggage', x: 336, y: 84, w: 42, h: 28, label: () => t('stdBaggage') },
+  { id: 'baggageTube', x: 384, y: 88, w: 54, h: 20, label: () => t('baggageTube') },
+  { id: 'fuel',       x: 234, y: 12, w: 54, h: 42, label: () => t('fuel') },
 ];
 
 function getZoneColor(ratio) {

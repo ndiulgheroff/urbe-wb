@@ -155,11 +155,12 @@ body {
 }
 .aircraft-bg {
   position: absolute;
-  top: 50%;
   left: 50%;
-  height: 130%;
-  transform: translate(-50%, -50%) rotate(-90deg);
-  opacity: 0.2;
+  top: 50%;
+  height: 235.5%;
+  width: auto;
+  transform: translate(-50%, -50%) rotate(0deg);
+  opacity: 0.25;
   pointer-events: none;
 }
 .aircraft-svg { width: 100%; height: auto; display: block; }

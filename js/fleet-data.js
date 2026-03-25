@@ -107,18 +107,19 @@ export const AIRCRAFT_TYPES = {
       { id: 'deIcingFluid2',  arm: 1.52,  maxKg: 30,   labelIt: 'Liquido anti-ghiaccio (OAM 42-160 + 42-309)',labelEn: 'De-icing fluid (OAM 42-160 + 42-309)' },
     ],
 
+    // CG envelope from AFM 6.4.4 — without MAM 42-678
     cgEnvelopes: {
       1900: [
-        { mass: 1450, cgFwd: 2.37, cgAft: 2.50 },
-        { mass: 1700, cgFwd: 2.37, cgAft: 2.50 },
-        { mass: 1900, cgFwd: 2.40, cgAft: 2.50 },
+        { mass: 1500, cgFwd: 2.35, cgAft: 2.48 },
+        { mass: 1700, cgFwd: 2.39, cgAft: 2.48 },
+        { mass: 1900, cgFwd: 2.44, cgAft: 2.47 },
       ],
     },
 
     chartScales: {
-      cg:     { min: 2.33, max: 2.55, step: 0.02, labelStep: 0.05 },
+      cg:     { min: 2.33, max: 2.52, step: 0.02, labelStep: 0.05 },
       mass:   { min: 1400, max: 1950, step: 25,   labelStep: 50 },
-      moment: { min: 3300, max: 4900, step: 100,  labelStep: 200 },
+      moment: { min: 3300, max: 4700, step: 100,  labelStep: 200 },
     },
 
     fleet: [
@@ -156,18 +157,19 @@ export const AIRCRAFT_TYPES = {
       { id: 'deIcingFluid2',  arm: 1.52,  maxKg: 30,   labelIt: 'Liquido anti-ghiaccio (OAM 42-160 + 42-309)',labelEn: 'De-icing fluid (OAM 42-160 + 42-309)' },
     ],
 
+    // CG envelope from AFM 6.4.4 — without MAM 42-678
     cgEnvelopes: {
       1900: [
-        { mass: 1450, cgFwd: 2.37, cgAft: 2.50 },
-        { mass: 1700, cgFwd: 2.37, cgAft: 2.50 },
-        { mass: 1900, cgFwd: 2.40, cgAft: 2.50 },
+        { mass: 1500, cgFwd: 2.35, cgAft: 2.48 },
+        { mass: 1700, cgFwd: 2.39, cgAft: 2.48 },
+        { mass: 1900, cgFwd: 2.44, cgAft: 2.47 },
       ],
     },
 
     chartScales: {
-      cg:     { min: 2.33, max: 2.55, step: 0.02, labelStep: 0.05 },
+      cg:     { min: 2.33, max: 2.52, step: 0.02, labelStep: 0.05 },
       mass:   { min: 1400, max: 1950, step: 25,   labelStep: 50 },
-      moment: { min: 3300, max: 4900, step: 100,  labelStep: 200 },
+      moment: { min: 3300, max: 4700, step: 100,  labelStep: 200 },
     },
 
     fleet: [
@@ -196,9 +198,13 @@ export const AIRCRAFT_TYPES = {
       { id: 'baggageExt',    arm: 1.575, maxKg: 20,  labelIt: 'Estensione bagagliaio',     labelEn: 'Baggage comp. extension', onlyFor: ['OE-CCB'] },
     ],
 
+    // CG envelope from AFM Figure 6.8 (weight-moment chart converted to CG)
+    // Forward limit is a straight line in moment space → curve in CG space
     cgEnvelopes: {
       730: [
         { mass: 450, cgFwd: -0.089, cgAft: 0.223 },
+        { mass: 550, cgFwd: -0.042, cgAft: 0.223 },
+        { mass: 650, cgFwd: -0.009, cgAft: 0.223 },
         { mass: 730, cgFwd:  0.011, cgAft: 0.223 },
       ],
     },

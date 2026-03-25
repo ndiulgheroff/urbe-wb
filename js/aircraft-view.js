@@ -1,18 +1,47 @@
 import { t } from './i18n.js';
 
 /**
- * Aircraft top-down view with loading zones.
- * Shows DA40NG silhouette for DA40NG type, generic zones for others.
+ * Aircraft top-down view with loading zones overlaid on silhouette.
+ * All types use the same aircraft.svg background with type-specific zone positions.
  */
 
-// DA40NG zone layout (original)
-const DA40NG_ZONES = [
-  { id: 'frontSeats', x: 210, y: 74, w: 60, h: 44 },
-  { id: 'rearSeats',  x: 276, y: 80, w: 48, h: 36 },
-  { id: 'stdBaggage', x: 336, y: 84, w: 42, h: 28 },
-  { id: 'baggageTube', x: 384, y: 88, w: 54, h: 20 },
-  { id: 'fuel',       x: 234, y: 12, w: 54, h: 42 },
-];
+// Zone layouts per aircraft type (viewBox 0 0 600 200)
+// 'fuel:systemId' zones map to fuel system inputs
+const ZONE_LAYOUTS = {
+  DA40NG: [
+    { id: 'frontSeats',  x: 210, y: 74, w: 60, h: 44 },
+    { id: 'rearSeats',   x: 276, y: 80, w: 48, h: 36 },
+    { id: 'stdBaggage',  x: 336, y: 84, w: 42, h: 28 },
+    { id: 'baggageTube', x: 384, y: 88, w: 54, h: 20 },
+    { id: 'fuel:mainFuel', x: 234, y: 12, w: 54, h: 42 },
+  ],
+  DA42NG: [
+    { id: 'noseBaggage',   x: 130, y: 82, w: 50, h: 28 },
+    { id: 'frontSeats',    x: 200, y: 70, w: 60, h: 48 },
+    { id: 'rearSeats',     x: 268, y: 76, w: 52, h: 40 },
+    { id: 'cabinBaggage',  x: 328, y: 82, w: 44, h: 28 },
+    { id: 'baggageExt',    x: 378, y: 86, w: 48, h: 22 },
+    { id: 'deIcingFluid',  x: 155, y: 18, w: 50, h: 30 },
+    { id: 'fuel:mainFuel', x: 224, y: 10, w: 54, h: 38 },
+    { id: 'fuel:auxFuel',  x: 290, y: 14, w: 50, h: 34 },
+  ],
+  IAL42: [
+    { id: 'noseBaggage',   x: 130, y: 82, w: 50, h: 28 },
+    { id: 'frontSeats',    x: 200, y: 70, w: 60, h: 48 },
+    { id: 'rearSeats',     x: 268, y: 76, w: 52, h: 40 },
+    { id: 'cabinBaggage',  x: 328, y: 82, w: 44, h: 28 },
+    { id: 'baggageExt',    x: 378, y: 86, w: 48, h: 22 },
+    { id: 'deIcingFluid',  x: 155, y: 18, w: 50, h: 30 },
+    { id: 'fuel:mainFuel', x: 224, y: 10, w: 54, h: 38 },
+    { id: 'fuel:auxFuel',  x: 290, y: 14, w: 50, h: 34 },
+  ],
+  DA20C1: [
+    { id: 'pilotAndPax',   x: 200, y: 68, w: 70, h: 54 },
+    { id: 'baggage',       x: 280, y: 78, w: 50, h: 36 },
+    { id: 'baggageExt',    x: 338, y: 84, w: 50, h: 28 },
+    { id: 'fuel:mainFuel', x: 234, y: 12, w: 54, h: 40 },
+  ],
+};
 
 function getZoneColor(ratio) {
   if (ratio === 0) return 'rgba(0, 150, 255, 0.15)';
@@ -51,50 +80,49 @@ export function renderAircraftView(container, typeConfig, stationMasses, fuelLit
     return;
   }
 
-  // For DA40NG use the positioned silhouette view
-  if (typeConfig.id === 'DA40NG') {
-    renderDA40NGView(container, typeConfig, stationMasses, fuelLiters, fuelMaxLiters);
-    return;
-  }
-
-  // For other types, render a simple horizontal bar view
-  renderGenericView(container, typeConfig, stationMasses, fuelLiters, fuelMaxLiters);
-}
-
-function renderDA40NGView(container, typeConfig, stationMasses, fuelLiters, fuelMaxLiters) {
   const stationMap = {};
   for (const s of typeConfig.loadingStations) stationMap[s.id] = s;
 
-  const mainFuel = typeConfig.fuelSystems[0];
-  const mainFuelLiters = fuelLiters[mainFuel.id] || 0;
-  const mainFuelMax = fuelMaxLiters[mainFuel.id] || mainFuel.maxLiters;
+  const fuelMap = {};
+  for (const fs of typeConfig.fuelSystems) fuelMap[fs.id] = fs;
 
-  const zoneData = DA40NG_ZONES.map(z => {
-    let mass, maxMass, ratio;
-    if (z.id === 'fuel') {
-      mass = mainFuelLiters;
-      maxMass = mainFuelMax;
+  const zones = ZONE_LAYOUTS[typeConfig.id] || [];
+
+  const zoneData = zones.map(z => {
+    let mass, maxMass, ratio, unit, displayId;
+
+    if (z.id.startsWith('fuel:')) {
+      // Fuel zone
+      const fsId = z.id.slice(5);
+      const fs = fuelMap[fsId];
+      mass = fuelLiters[fsId] || 0;
+      maxMass = fuelMaxLiters[fsId] || (fs ? fs.maxLiters : 0);
       ratio = maxMass > 0 ? mass / maxMass : 0;
+      unit = 'L';
+      displayId = fsId;
     } else {
+      // Station zone
       const station = stationMap[z.id];
       mass = stationMasses[z.id] || 0;
       maxMass = station ? station.maxKg : 0;
       ratio = maxMass > 0 ? mass / maxMass : 0;
+      unit = 'kg';
+      displayId = z.id;
     }
-    return { ...z, mass, maxMass, ratio };
+    return { ...z, mass, maxMass, ratio, unit, displayId };
   });
 
   const svg = `
 <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" class="aircraft-svg">
   ${zoneData.map(z => {
-    const massText = z.id === 'fuel' ? `${z.mass} L` : (z.mass > 0 ? `${z.mass} kg` : '—');
-    const maxText = z.id === 'fuel' ? `max ${z.maxMass} L` : `max ${z.maxMass} kg`;
+    const massText = z.unit === 'L' ? `${z.mass} L` : (z.mass > 0 ? `${z.mass} kg` : '—');
+    const maxText = `max ${z.maxMass} ${z.unit}`;
     return `
     <rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="4"
           fill="#12121f" stroke="none" pointer-events="none"/>
     <rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="4"
           fill="${getZoneColor(z.ratio)}" stroke="${getZoneBorder(z.ratio)}" stroke-width="2"
-          class="zone-rect" data-zone="${z.id}" style="cursor:pointer"/>
+          class="zone-rect" data-zone="${z.displayId}" data-isfuel="${z.id.startsWith('fuel:') ? '1' : '0'}" style="cursor:pointer"/>
     <text x="${z.x + z.w/2}" y="${z.y + z.h/2}" text-anchor="middle" dominant-baseline="central"
           fill="${getTextColor(z.ratio)}" font-size="9" font-weight="bold" pointer-events="none">
       ${massText}
@@ -107,74 +135,19 @@ function renderDA40NGView(container, typeConfig, stationMasses, fuelLiters, fuel
 </svg>`;
 
   container.innerHTML = `<img src="img/aircraft.svg" class="aircraft-bg" alt=""/>` + svg;
-  bindZoneClicks(container);
-}
 
-function renderGenericView(container, typeConfig, stationMasses, fuelLiters, fuelMaxLiters) {
-  const items = [];
-
-  // Stations
-  for (const s of typeConfig.loadingStations) {
-    const mass = stationMasses[s.id] || 0;
-    const ratio = s.maxKg > 0 ? mass / s.maxKg : 0;
-    const lang = document.documentElement.lang === 'en' ? 'en' : 'it';
-    items.push({ id: s.id, label: lang === 'en' ? s.labelEn : s.labelIt, mass, maxMass: s.maxKg, ratio, unit: 'kg', isFuel: false });
-  }
-
-  // Fuel systems
-  for (const fs of typeConfig.fuelSystems) {
-    const liters = fuelLiters[fs.id] || 0;
-    const maxL = fuelMaxLiters[fs.id] || fs.maxLiters;
-    const ratio = maxL > 0 ? liters / maxL : 0;
-    const lang = document.documentElement.lang === 'en' ? 'en' : 'it';
-    items.push({ id: fs.id, label: lang === 'en' ? fs.labelEn : fs.labelIt, mass: liters, maxMass: maxL, ratio, unit: 'L', isFuel: true });
-  }
-
-  // Compact horizontal bar layout
-  const barHeight = 22;
-  const padding = 4;
-  const svgH = items.length * (barHeight + padding) + padding;
-  const svgW = 600;
-  const labelW = 200;
-  const barX = labelW + 10;
-  const barW = svgW - barX - 80;
-
-  let bars = '';
-  items.forEach((item, i) => {
-    const y = padding + i * (barHeight + padding);
-    const fillW = Math.min(item.ratio, 1.2) / 1.2 * barW;
-    const color = getZoneBorder(item.ratio);
-    const textVal = item.mass > 0 ? `${item.mass} ${item.unit}` : '—';
-    const maxVal = `${item.maxMass} ${item.unit}`;
-    bars += `
-      <text x="${labelW}" y="${y + barHeight / 2 + 1}" text-anchor="end" dominant-baseline="central"
-            fill="rgba(255,255,255,0.7)" font-size="9" pointer-events="none">${item.label}</text>
-      <rect x="${barX}" y="${y}" width="${barW}" height="${barHeight}" rx="3"
-            fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-      <rect x="${barX}" y="${y}" width="${fillW}" height="${barHeight}" rx="3"
-            fill="${getZoneColor(item.ratio)}" class="zone-rect" data-zone="${item.id}" style="cursor:pointer"/>
-      <text x="${barX + barW / 2}" y="${y + barHeight / 2 + 1}" text-anchor="middle" dominant-baseline="central"
-            fill="${getTextColor(item.ratio)}" font-size="9" font-weight="bold" pointer-events="none">${textVal}</text>
-      <text x="${barX + barW + 6}" y="${y + barHeight / 2 + 1}" text-anchor="start" dominant-baseline="central"
-            fill="rgba(255,255,255,0.4)" font-size="8" pointer-events="none">${maxVal}</text>
-    `;
-  });
-
-  const svg = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" class="aircraft-svg">${bars}</svg>`;
-  container.innerHTML = svg;
-  bindZoneClicks(container);
-}
-
-function bindZoneClicks(container) {
+  // Click zones to focus corresponding input
   container.querySelectorAll('.zone-rect').forEach(rect => {
     rect.addEventListener('click', () => {
       const zoneId = rect.getAttribute('data-zone');
-      // Try fuel input first
-      const fuelInput = document.querySelector(`.fuel-input[data-fuel="${zoneId}"]`);
-      if (fuelInput) { fuelInput.focus(); fuelInput.select(); return; }
-      // Then station input
-      const stationInput = document.querySelector(`[data-station="${zoneId}"]`);
-      if (stationInput) { stationInput.focus(); stationInput.select(); }
+      const isFuel = rect.getAttribute('data-isfuel') === '1';
+      if (isFuel) {
+        const input = document.querySelector(`.fuel-input[data-fuel="${zoneId}"]`);
+        if (input) { input.focus(); input.select(); }
+      } else {
+        const input = document.querySelector(`[data-station="${zoneId}"]`);
+        if (input) { input.focus(); input.select(); }
+      }
     });
   });
 }

@@ -124,6 +124,53 @@ export const AIRCRAFT_TYPES = {
     fleet: [
       { registration: 'OE-FDD', lastWeighing: '24/03/2024', emptyWeight: 1462.16, emptyArm: 2.410, emptyMoment: 3522.38, maxTakeoffMass: 1900 },
       { registration: 'OE-FEE', lastWeighing: '20/08/2024', emptyWeight: 1497.68, emptyArm: 2.409, emptyMoment: 3607.59, maxTakeoffMass: 1900 },
+    ],
+  },
+
+  /* ─── I-AL42 (DA42NG, separate form) ─────────────────────────────── */
+  IAL42: {
+    id: 'IAL42',
+    label: 'I-AL42',
+
+    fuelSystems: [
+      { id: 'mainFuel', density: 0.84, arm: 2.63, maxLiters: 200,
+        labelIt: 'Carburante principale (Jet-A1)', labelEn: 'Main fuel (Jet-A1)' },
+      { id: 'auxFuel', density: 0.84, arm: 3.20, maxLiters: 102,
+        labelIt: 'Carburante ausiliario (Jet-A1)', labelEn: 'Auxiliary fuel (Jet-A1)', optional: true },
+    ],
+
+    tankConfigs: null,
+    defaultTankConfig: null,
+
+    maxZeroFuelMass: null,
+
+    loadingStations: [
+      { id: 'frontSeats',     arm: 2.30,  maxKg: 200,  labelIt: 'Sedili anteriori',                           labelEn: 'Front seats' },
+      { id: 'rearSeats',      arm: 3.25,  maxKg: 180,  labelIt: 'Sedili posteriori',                          labelEn: 'Rear seats' },
+      { id: 'noseBaggage',    arm: 0.90,  maxKg: 30,   labelIt: 'Bagagliaio anteriore (muso)',                 labelEn: 'Nose baggage comp.' },
+      { id: 'cabinBaggage',   arm: 3.89,  maxKg: 45,   labelIt: 'Bagagliaio cabina',                          labelEn: 'Cabin baggage comp.' },
+      { id: 'baggageExt',     arm: 4.54,  maxKg: 18,   labelIt: 'Estensione bagagli',                         labelEn: 'Baggage extension' },
+      { id: 'stdBaggage',     arm: 3.65,  maxKg: 45,   labelIt: 'Bagagliaio standard',                        labelEn: 'Standard baggage comp.' },
+      { id: 'shortBagExt',    arm: 3.97,  maxKg: 18,   labelIt: 'Estensione bagagli corta (OAM 42-301)',       labelEn: 'Short baggage ext. (OAM 42-301)' },
+      { id: 'deIcingFluid',   arm: 1.00,  maxKg: 27.5, labelIt: 'Liquido anti-ghiaccio (OAM 42-160)',         labelEn: 'De-icing fluid (OAM 42-160)' },
+      { id: 'deIcingFluid2',  arm: 1.52,  maxKg: 30,   labelIt: 'Liquido anti-ghiaccio (OAM 42-160 + 42-309)',labelEn: 'De-icing fluid (OAM 42-160 + 42-309)' },
+    ],
+
+    cgEnvelopes: {
+      1900: [
+        { mass: 1450, cgFwd: 2.37, cgAft: 2.50 },
+        { mass: 1700, cgFwd: 2.37, cgAft: 2.50 },
+        { mass: 1900, cgFwd: 2.40, cgAft: 2.50 },
+      ],
+    },
+
+    chartScales: {
+      cg:     { min: 2.33, max: 2.55, step: 0.02, labelStep: 0.05 },
+      mass:   { min: 1400, max: 1950, step: 25,   labelStep: 50 },
+      moment: { min: 3300, max: 4900, step: 100,  labelStep: 200 },
+    },
+
+    fleet: [
       { registration: 'I-AL42', lastWeighing: '24/03/2024', emptyWeight: 1462.16, emptyArm: 2.410, emptyMoment: 3522.38, maxTakeoffMass: 1900 },
     ],
   },

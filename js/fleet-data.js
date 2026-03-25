@@ -84,9 +84,9 @@ export const AIRCRAFT_TYPES = {
     label: 'DA42NG',
 
     fuelSystems: [
-      { id: 'mainFuel', density: 0.84, arm: 2.63, maxLiters: 200,
+      { id: 'mainFuel', density: 0.84, arm: 2.63, maxLiters: 196,
         labelIt: 'Carburante principale (Jet-A1)', labelEn: 'Main fuel (Jet-A1)' },
-      { id: 'auxFuel', density: 0.84, arm: 3.20, maxLiters: 102,
+      { id: 'auxFuel', density: 0.84, arm: 3.20, maxLiters: 98,
         labelIt: 'Carburante ausiliario (Jet-A1)', labelEn: 'Auxiliary fuel (Jet-A1)', optional: true },
     ],
 
@@ -144,9 +144,9 @@ export const AIRCRAFT_TYPES = {
     label: 'I-AL42',
 
     fuelSystems: [
-      { id: 'mainFuel', density: 0.84, arm: 2.63, maxLiters: 200,
+      { id: 'mainFuel', density: 0.84, arm: 2.63, maxLiters: 196,
         labelIt: 'Carburante principale (Jet-A1)', labelEn: 'Main fuel (Jet-A1)' },
-      { id: 'auxFuel', density: 0.84, arm: 3.20, maxLiters: 102,
+      { id: 'auxFuel', density: 0.84, arm: 3.20, maxLiters: 98,
         labelIt: 'Carburante ausiliario (Jet-A1)', labelEn: 'Auxiliary fuel (Jet-A1)', optional: true },
     ],
 
@@ -201,7 +201,7 @@ export const AIRCRAFT_TYPES = {
     label: 'DA20-C1',
 
     fuelSystems: [
-      { id: 'mainFuel', density: 0.72, arm: 0.824, maxLiters: 80,
+      { id: 'mainFuel', density: 0.72, arm: 0.824, maxLiters: 76,
         labelIt: 'Carburante (AVGAS)', labelEn: 'Fuel (AVGAS)' },
     ],
 

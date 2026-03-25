@@ -107,19 +107,29 @@ export const AIRCRAFT_TYPES = {
       { id: 'deIcingFluid2',  arm: 1.52,  maxKg: 30,   labelIt: 'Liquido anti-ghiaccio (OAM 42-160 + 42-309)',labelEn: 'De-icing fluid (OAM 42-160 + 42-309)' },
     ],
 
-    // CG envelope from AFM 6.4.4 — without MAM 42-678
+    // CG envelope from EASA TCDS A.005 Issue 44, Section C.III.14
+    // Aft limit: 2.454 at 1450 kg, linear to 2.480 at 1700+ kg (without OAM 42-199)
+    // Forward limit: 2.350 at 1450-1468 kg, linear to 2.418 at 1900, 2.434 at 1999
     cgEnvelopes: {
       1900: [
-        { mass: 1500, cgFwd: 2.35, cgAft: 2.48 },
-        { mass: 1700, cgFwd: 2.39, cgAft: 2.48 },
-        { mass: 1900, cgFwd: 2.44, cgAft: 2.47 },
+        { mass: 1450, cgFwd: 2.350, cgAft: 2.454 },
+        { mass: 1468, cgFwd: 2.350, cgAft: 2.456 },
+        { mass: 1700, cgFwd: 2.387, cgAft: 2.480 },
+        { mass: 1900, cgFwd: 2.418, cgAft: 2.480 },
+      ],
+      1999: [
+        { mass: 1450, cgFwd: 2.350, cgAft: 2.454 },
+        { mass: 1468, cgFwd: 2.350, cgAft: 2.456 },
+        { mass: 1700, cgFwd: 2.387, cgAft: 2.480 },
+        { mass: 1900, cgFwd: 2.418, cgAft: 2.480 },
+        { mass: 1999, cgFwd: 2.434, cgAft: 2.480 },
       ],
     },
 
     chartScales: {
       cg:     { min: 2.33, max: 2.52, step: 0.02, labelStep: 0.05 },
-      mass:   { min: 1400, max: 1950, step: 25,   labelStep: 50 },
-      moment: { min: 3300, max: 4700, step: 100,  labelStep: 200 },
+      mass:   { min: 1400, max: 2050, step: 25,   labelStep: 50 },
+      moment: { min: 3300, max: 4900, step: 100,  labelStep: 200 },
     },
 
     fleet: [
@@ -157,19 +167,27 @@ export const AIRCRAFT_TYPES = {
       { id: 'deIcingFluid2',  arm: 1.52,  maxKg: 30,   labelIt: 'Liquido anti-ghiaccio (OAM 42-160 + 42-309)',labelEn: 'De-icing fluid (OAM 42-160 + 42-309)' },
     ],
 
-    // CG envelope from AFM 6.4.4 — without MAM 42-678
+    // CG envelope from EASA TCDS A.005 Issue 44, Section C.III.14
     cgEnvelopes: {
       1900: [
-        { mass: 1500, cgFwd: 2.35, cgAft: 2.48 },
-        { mass: 1700, cgFwd: 2.39, cgAft: 2.48 },
-        { mass: 1900, cgFwd: 2.44, cgAft: 2.47 },
+        { mass: 1450, cgFwd: 2.350, cgAft: 2.454 },
+        { mass: 1468, cgFwd: 2.350, cgAft: 2.456 },
+        { mass: 1700, cgFwd: 2.387, cgAft: 2.480 },
+        { mass: 1900, cgFwd: 2.418, cgAft: 2.480 },
+      ],
+      1999: [
+        { mass: 1450, cgFwd: 2.350, cgAft: 2.454 },
+        { mass: 1468, cgFwd: 2.350, cgAft: 2.456 },
+        { mass: 1700, cgFwd: 2.387, cgAft: 2.480 },
+        { mass: 1900, cgFwd: 2.418, cgAft: 2.480 },
+        { mass: 1999, cgFwd: 2.434, cgAft: 2.480 },
       ],
     },
 
     chartScales: {
       cg:     { min: 2.33, max: 2.52, step: 0.02, labelStep: 0.05 },
-      mass:   { min: 1400, max: 1950, step: 25,   labelStep: 50 },
-      moment: { min: 3300, max: 4700, step: 100,  labelStep: 200 },
+      mass:   { min: 1400, max: 2050, step: 25,   labelStep: 50 },
+      moment: { min: 3300, max: 4900, step: 100,  labelStep: 200 },
     },
 
     fleet: [

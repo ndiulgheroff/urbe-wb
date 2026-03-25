@@ -91,6 +91,7 @@ export function renderAircraftView(container, typeConfig, stationMasses, fuelLit
   const zoneData = zones.map(z => {
     let mass, maxMass, ratio, unit, displayId;
 
+    let label;
     if (z.id.startsWith('fuel:')) {
       // Fuel zone
       const fsId = z.id.slice(5);
@@ -100,6 +101,8 @@ export function renderAircraftView(container, typeConfig, stationMasses, fuelLit
       ratio = maxMass > 0 ? mass / maxMass : 0;
       unit = 'L';
       displayId = fsId;
+      const lang = document.documentElement.lang === 'en' ? 'en' : 'it';
+      label = fs ? (lang === 'en' ? fs.labelEn : fs.labelIt) : 'Fuel';
     } else {
       // Station zone
       const station = stationMap[z.id];
@@ -108,8 +111,10 @@ export function renderAircraftView(container, typeConfig, stationMasses, fuelLit
       ratio = maxMass > 0 ? mass / maxMass : 0;
       unit = 'kg';
       displayId = z.id;
+      const lang = document.documentElement.lang === 'en' ? 'en' : 'it';
+      label = station ? (lang === 'en' ? station.labelEn : station.labelIt) : z.id;
     }
-    return { ...z, mass, maxMass, ratio, unit, displayId };
+    return { ...z, mass, maxMass, ratio, unit, displayId, label };
   });
 
   const svg = `
@@ -118,6 +123,10 @@ export function renderAircraftView(container, typeConfig, stationMasses, fuelLit
     const massText = z.unit === 'L' ? `${z.mass} L` : (z.mass > 0 ? `${z.mass} kg` : '—');
     const maxText = `max ${z.maxMass} ${z.unit}`;
     return `
+    <text x="${z.x + z.w/2}" y="${z.y - 4}" text-anchor="middle"
+          fill="rgba(255,255,255,0.6)" font-size="7" font-weight="bold" pointer-events="none">
+      ${z.label}
+    </text>
     <rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="4"
           fill="#12121f" stroke="none" pointer-events="none"/>
     <rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="4"
